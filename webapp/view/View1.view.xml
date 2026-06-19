@@ -1,0 +1,85 @@
+<mvc:View controllerName="zppmigobatch.controller.View1"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form"
+    xmlns="sap.m">
+    
+    <Page id="page" title="{i18n>title}">
+        <content>
+            
+            <Panel id="selectionPanel" expandable="true" expanded="true" headerText="Selection Screen" width="auto" class="sapUiResponsiveMargin">
+                <content>
+                    
+                    <f:SimpleForm id="selectionForm"
+                        editable="true"
+                        layout="ColumnLayout"
+                        columnsM="2" columnsL="2" columnsXL="2">
+                        <f:content>
+                            
+                            <core:Title id="_IDGenTitle1" text="Order Details" />
+
+                            <Label id="_IDGenLabelPostingDate" text="Posting Date" required="true" />
+                            <DatePicker id="inputPostingDate" 
+                                        valueFormat="yyyy-MM-dd" 
+                                        displayFormat="MMM dd, yyyy" 
+                                        placeholder="Select Posting Date" />
+                            
+                            <Label id="_IDGenLabel" text="Plant" required="true"/>
+                            <Input id="inputPlant"
+                                   showValueHelp="true"
+                                   showSuggestion="true"
+                                   suggestionItems="{ path: '/ZI_PLANTVH', templateShareable: false }"
+                                   valueHelpRequest=".onPlantValueHelp"
+                                   placeholder="Select Plant">
+                                <suggestionItems>
+                                    <core:ListItem id="_IDGenListItem1" text="{Plant}" additionalText="{PlantName}" key="{Plant}" />
+                                </suggestionItems>
+                            </Input>
+
+                            <Label id="_IDGenLabel1" text="Sales Order" required="true"/>
+                            <Input id="inputSalesOrder"
+                                   showValueHelp="true"
+                                   showSuggestion="true"
+                                   suggest=".onSalesOrderSuggest"
+                                   suggestionItems="{ path: '/ZI_PLANTSALES_VH', templateShareable: false }"
+                                   valueHelpRequest=".onSalesOrderValueHelp"
+                                   placeholder="Select Sales Order">
+                                <suggestionItems>
+                                    <core:ListItem id="_IDGenListItem2" text="{SalesOrder}" key="{SalesOrder}" />
+                                </suggestionItems>
+                            </Input>
+
+                            <Label id="_IDGenLabel2" text="Sales Order Item" required="true"/>
+                            <Input id="inputSalesOrderItem"
+                                   showValueHelp="true"
+                                   showSuggestion="true"
+                                   suggest=".onSalesOrderItemSuggest"
+                                   suggestionItems="{ path: '/ZI_SALESITEM_VH', templateShareable: false }"
+                                   valueHelpRequest=".onSalesOrderItemValueHelp"
+                                   placeholder="Select Item">
+                                <suggestionItems>
+                                    <core:ListItem id="_IDGenListItem3" text="{SalesOrderItem}" key="{SalesOrderItem}" />
+                                </suggestionItems>
+                            </Input>
+
+
+                            <core:Title id="_IDGenTitle2" text="Storage Details" />
+
+                            <Label id="_IDGenLabel3" text="From Storage Location" />
+                            <Input id="inputFromSloc" value="1201" />
+
+                            <Label id="_IDGenLabel4" text="To Storage Location" />
+                            <Input id="inputToSloc" value="1210" />
+
+                            <Label id="_IDGenLabel5" text="Remark" />
+                            <Input id="inputRemark" placeholder="Enter remark..." />
+                            
+                        </f:content>
+                    </f:SimpleForm>
+                    
+                </content>
+            </Panel>
+            
+        </content>
+    </Page>
+</mvc:View>
