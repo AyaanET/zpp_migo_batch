@@ -5,6 +5,7 @@
         confirm=".onSalesOrderVHConfirm" 
         contentWidth="600px"         
         contentHeight="400px"
+        search=".onSalesOrderVHSearch"
         rememberSelections="true"
         >
         

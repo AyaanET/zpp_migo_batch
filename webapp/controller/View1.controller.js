@@ -108,6 +108,25 @@ sap.ui.define([
             }
         },
 
+        onPlantVHSearch: function (oEvent) {
+            var sValue = oEvent.getParameter("value");
+            var aFilters = [];
+
+            if (sValue) {
+                // Search in both Plant ID OR Plant Name
+                aFilters.push(new Filter({
+                    filters: [
+                        new Filter("Plant", FilterOperator.Contains, sValue),
+                        new Filter("PlantName", FilterOperator.Contains, sValue)
+                    ],
+                    and: false
+                }));
+            }
+            
+            // Apply the filter to the dialog's binding
+            oEvent.getSource().getBinding("items").filter(aFilters);
+        },
+
         onSalesOrderValueHelp: function (oEvent) {
             var oView = this.getView();
             var sPlant = oView.byId("inputPlant").getValue();
@@ -134,6 +153,22 @@ sap.ui.define([
                 this._oSalesOrderDialog.getBinding("items").filter([oFilter]);
                 this._oSalesOrderDialog.open();
             }
+        },
+
+        onSalesOrderVHSearch: function (oEvent) {
+            var sValue = oEvent.getParameter("value");
+            var sPlant = this.getView().byId("inputPlant").getValue();
+            
+            // 1. ALWAYS keep the Plant filter active
+            var aFilters = [new Filter("Plant", FilterOperator.EQ, sPlant)];
+
+            // 2. Add the search term if the user typed one
+            if (sValue) {
+                aFilters.push(new Filter("SalesOrder", FilterOperator.Contains, sValue));
+            }
+            
+            // Apply both filters to the dialog
+            oEvent.getSource().getBinding("items").filter(aFilters);
         },
 
         onSalesOrderVHConfirm: function (oEvent) {
@@ -179,6 +214,22 @@ sap.ui.define([
                 var sSalesOrderItem = oSelectedItem.getCells()[0].getText();
                 this.getView().byId("inputSalesOrderItem").setValue(sSalesOrderItem);
             }
+        },
+
+        onItemVHSearch: function (oEvent) {
+            var sValue = oEvent.getParameter("value");
+            var sSalesOrder = this.getView().byId("inputSalesOrder").getValue();
+            
+            // 1. ALWAYS keep the Sales Order filter active
+            var aFilters = [new Filter("SalesOrder", FilterOperator.EQ, sSalesOrder)];
+
+            // 2. Add the search term if the user typed one
+            if (sValue) {
+                aFilters.push(new Filter("SalesOrderItem", FilterOperator.Contains, sValue));
+            }
+            
+            // Apply both filters to the dialog
+            oEvent.getSource().getBinding("items").filter(aFilters);
         },
 
         // ==========================================

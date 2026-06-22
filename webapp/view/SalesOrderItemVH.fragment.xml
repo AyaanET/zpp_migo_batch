@@ -5,6 +5,7 @@
         confirm=".onItemVHConfirm"
         contentWidth="600px"         
         contentHeight="400px"
+        search=".onItemVHSearch"
         rememberSelections="true"
         >
         
