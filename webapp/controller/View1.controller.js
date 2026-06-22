@@ -235,7 +235,7 @@ sap.ui.define([
             var sScannedBatch = oInput.getValue().trim(); 
             var oLocalModel = oView.getModel("local");
 
-            // Helper function to keep focus on the scanner input
+            
             var retainFocus = function() {
                 setTimeout(function() {
                     oInput.focus();
@@ -281,7 +281,7 @@ sap.ui.define([
             oLocalModel.setProperty("/scannedBatches", aScanned);
             oInput.setValue("");
 
-            // 3. Keep the cursor locked in the box so the user can scan the next item instantly!
+            
             retainFocus();
         },
 
@@ -364,8 +364,6 @@ sap.ui.define([
             // ==========================================
             // 2. VALIDATION
             // ==========================================
-            
-            // Check if all header fields are filled
             if (!oSelection.plant || !oSelection.salesOrder || !oSelection.salesOrderItem || 
                 !oSelection.fromSloc || !oSelection.toSloc || !oSelection.postingDate) {
                 
@@ -373,7 +371,6 @@ sap.ui.define([
                 return;
             }
 
-            // Check if at least one batch is scanned
             if (aScannedBatches.length === 0) {
                 MessageBox.error("Please scan at least one batch into the Batch Details table.");
                 return;
@@ -382,14 +379,11 @@ sap.ui.define([
             // ==========================================
             // 3. FORMATTING THE PAYLOAD
             // ==========================================
-
-            // Format the JavaScript Date object into "YYYY-MM-DD"
             var oDateFormat = DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
             var sFormattedDate = oDateFormat.format(oSelection.postingDate);
             var sSalesOrder = oSelection.salesOrder.padStart(10, '0');
             var sSalesOrderItem = oSelection.salesOrderItem.padStart(6, '0');
 
-            // Transform our local scanned array into the exact backend _Item structure
             var aItemsPayload = aScannedBatches.map(function(oBatch) {
                 return {
                     "Material": oBatch.material,
@@ -399,7 +393,6 @@ sap.ui.define([
                 };
             });
 
-            // Construct the final Header payload
             var oPayload = {
                 "Salesorder": sSalesOrder,          
                 "Salesorderitem": sSalesOrderItem,
@@ -414,52 +407,49 @@ sap.ui.define([
             // ==========================================
             // 4. ODATA V4 POST REQUEST
             // ==========================================
-            
-            // Show a loading indicator
             oView.setBusy(true);
 
-            // Bind to the main entity set
             var oListBinding = oODataModel.bindList("/ZC_MIGO_HD");
-
-            
             var oContext = oListBinding.create(oPayload);
 
-            
             oContext.created().then(function () {
                 oView.setBusy(false);
                 
-                
+                // Fetch the returned fields from SAP
                 var sMatDoc = oContext.getProperty("MatDoc");
+                var sMess = oContext.getProperty("Mess"); // Fetch backend message if available
                 
-            
-                var sMessage = sMatDoc 
-                    ? "Material Document " + sMatDoc + " created successfully!" 
-                    : "Material Document created successfully!";
-                
-                
-                MessageBox.success(sMessage, {
-                    onClose: function() {
-                        // Automatically clear the screen after success
-                        oLocalModel.setProperty("/scannedBatches", []);
-                        oLocalModel.setProperty("/selection/plant", "");
-                        oLocalModel.setProperty("/selection/salesOrder", "");
-                        oLocalModel.setProperty("/selection/salesOrderItem", "");
-                        oLocalModel.setProperty("/selection/remark", "");
-                        
-                        // Put cursor back at the plant
-                        var oPlantInput = oView.byId("inputPlant");
-                        if (oPlantInput) {
-                            oPlantInput.focus(); 
+                // THE FIX: Check if we actually got a Material Document
+                if (sMatDoc && sMatDoc.trim() !== "") {
+                    // SUCCESS PATH
+                    var sMessage = "Material Document " + sMatDoc + " created successfully!";
+                    MessageBox.success(sMessage, {
+                        onClose: function() {
+                            // Automatically clear the screen after success
+                            oLocalModel.setProperty("/scannedBatches", []);
+                            oLocalModel.setProperty("/selection/plant", "");
+                            oLocalModel.setProperty("/selection/salesOrder", "");
+                            oLocalModel.setProperty("/selection/salesOrderItem", "");
+                            oLocalModel.setProperty("/selection/remark", "");
+                            
+                            // Put cursor back at the plant
+                            var oPlantInput = oView.byId("inputPlant");
+                            if (oPlantInput) {
+                                oPlantInput.focus(); 
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    // ERROR PATH: The HTTP call worked, but the ABAP BAPI failed!
+                    var sBackendError = sMess ? sMess : "Backend failed to generate a Material Document.";
+                    MessageBox.error("SAP Business Error: \n\n" + sBackendError);
+                }
 
             }).catch(function (oError) {
                 oView.setBusy(false);
                 
-                // Extract and show the exact error message from SAP
-                var sError = oLocalModel.getProperty("Mess");
-                var sErrorMsg = "Failed to post Material Document.";
+                // Network or Framework Error
+                var sErrorMsg = "Failed to post Material Document due to a network/server error.";
                 if (oError && oError.message) {
                     sErrorMsg = oError.message;
                 }
