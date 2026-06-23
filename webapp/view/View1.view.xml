@@ -68,11 +68,34 @@
 
                             <!-- <core:Title id="_IDGenTitle2" text="Storage Details"  /> -->
 
-                            <Label id="_IDGenLabel3" text="From Storage Location" required="true"/>
-                            <Input id="inputFromSloc" value="{local>/selection/fromSloc}" change=".onSelectionChange" />
+                             <Label id="_IDGenLabel3" text="From Storage Location" required="true"/>
+                            <Input id="inputFromSloc" 
+                                value="{local>/selection/fromSloc}" 
+                                change=".onSelectionChange"
+                                showValueHelp="true"
+                                showSuggestion="true"
+                                suggest=".onFromSlocSuggest"
+                                suggestionItems="{ path: '/ZI_STORAGELOCATION_VH', templateShareable: false }"
+                                valueHelpRequest=".onFromSlocValueHelp"
+                                placeholder="Select From Sloc">
+                                <suggestionItems>
+                                    <core:ListItem id="_IDGenListItemFromSloc" text="{StorageLocation}" additionalText="{StorageLocationName}" key="{StorageLocation}" />
+                                </suggestionItems>
+                            </Input>
 
                             <Label id="_IDGenLabel4" text="To Storage Location" required="true"/>
-                            <Input id="inputToSloc" value="{local>/selection/toSloc}" />
+                            <Input id="inputToSloc" 
+                                value="{local>/selection/toSloc}" 
+                                showValueHelp="true"
+                                showSuggestion="true"
+                                suggest=".onToSlocSuggest"
+                                suggestionItems="{ path: '/ZI_STORAGELOCATION_VH', templateShareable: false }"
+                                valueHelpRequest=".onToSlocValueHelp"
+                                placeholder="Select To Sloc">
+                                <suggestionItems>
+                                    <core:ListItem id="_IDGenListItemToSloc" text="{StorageLocation}" additionalText="{StorageLocationName}" key="{StorageLocation}" />
+                                </suggestionItems>
+                            </Input>
 
                             <Label id="_IDGenLabel5" text="Remark" />
                             <Input id="inputRemark" 
