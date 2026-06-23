@@ -539,10 +539,12 @@ sap.ui.define([
             oLocalModel.setProperty("/scannedBatches", []);
             
             // Reset the selection inputs if needed
-            oLocalModel.setProperty("/selection/plant", "");
+            oLocalModel.setProperty("/selection/plant", "1200");
             oLocalModel.setProperty("/selection/salesOrder", "");
             oLocalModel.setProperty("/selection/salesOrderItem", "");
-            
+            oLocalModel.setProperty("/selection/remark", "");
+            oLocalModel.setProperty("/selection/fromSloc", "1201");
+            oLocalModel.setProperty("/selection/toSloc", "1210");
             sap.m.MessageToast.show("Screen cleared for new entry.");
         },
 
@@ -629,9 +631,11 @@ sap.ui.define([
                         onClose: function() {
                             // Automatically clear the screen after success
                             oLocalModel.setProperty("/scannedBatches", []);
-                            oLocalModel.setProperty("/selection/plant", "");
+                            oLocalModel.setProperty("/selection/plant", "1200");
                             oLocalModel.setProperty("/selection/salesOrder", "");
                             oLocalModel.setProperty("/selection/salesOrderItem", "");
+                            oLocalModel.setProperty("/selection/fromSloc", "1201");
+                            oLocalModel.setProperty("/selection/toSloc", "1210");
                             oLocalModel.setProperty("/selection/remark", "");
                             
                             // Put cursor back at the plant

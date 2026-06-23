@@ -26,7 +26,7 @@ function (JSONModel, Device) {
                 // 1. Selection Screen State
                 selection: {
                     postingDate: new Date(), // Automatically sets today
-                    plant: "",
+                    plant: "1200",
                     salesOrder: "",
                     salesOrderItem: "",
                     fromSloc: "1201",        // Default value
