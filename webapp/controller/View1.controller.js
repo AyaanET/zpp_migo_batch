@@ -496,7 +496,7 @@ sap.ui.define([
             oLocalModel.setProperty("/scannedBatches", aScanned);
             oInput.setValue("");
 
-            
+            this._calculateTotalYield();
             retainFocus();
         },
 
@@ -536,8 +536,23 @@ sap.ui.define([
             // 7. Clear the checkboxes so they don't stay ghost-selected
             oTable.removeSelections(true);
 
-            
+            this._calculateTotalYield();
             sap.m.MessageToast.show(aSelectedContexts.length + " batch(es) deleted.");
+        },
+
+        _calculateTotalYield: function () {
+            var oLocalModel = this.getView().getModel("local");
+            var aScannedBatches = oLocalModel.getProperty("/scannedBatches") || [];
+            var fTotalQty = 0;
+
+            // Loop through all scanned batches and sum the quantity
+            aScannedBatches.forEach(function (oBatch) {
+                // Parse float to ensure mathematical addition, not string concatenation
+                fTotalQty += parseFloat(oBatch.qty) || 0; 
+            });
+
+            // Set the total back to the model, rounded to 2 decimal places (optional)
+            oLocalModel.setProperty("/selection/yieldQty", fTotalQty.toFixed(3));
         },
 
         // ==========================================

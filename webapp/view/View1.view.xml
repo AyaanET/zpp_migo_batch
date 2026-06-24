@@ -182,6 +182,9 @@
 
                         <Column id="_IDGenColumn7" width="8rem" hAlign="End">
                             <Text id="_IDGenText11" text="Qty" />
+                            <footer>
+                                <ObjectNumber id="_IDGenObjectNumber" number="{local>/selection/yieldQty}" state="Success" />
+                            </footer>
                         </Column>
 
                         <Column id="_IDGenColumn8" width="6rem">

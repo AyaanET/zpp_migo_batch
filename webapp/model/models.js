@@ -31,7 +31,8 @@ function (JSONModel, Device) {
                     salesOrderItem: "",
                     fromSloc: "1201",        // Default value
                     toSloc: "1210",          // Default value
-                    remark: ""
+                    remark: "",
+                    yieldQty: ""
                 },
 
                 // 2. Background Data (Loaded from ZI_GET_BATCHES)
