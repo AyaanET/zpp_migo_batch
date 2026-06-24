@@ -15,6 +15,19 @@ sap.ui.define([
         onInit: function () {
             var oLocalModel = models.createLocalModel();
             this.getView().setModel(oLocalModel, "local");
+
+            // 1. Read the default values from your model
+            var sPlant = oLocalModel.getProperty("/selection/plant");
+            var sFromSloc = oLocalModel.getProperty("/selection/fromSloc");
+
+            // 2. If both defaults exist on load, trigger the background fetch!
+            if (sPlant && sFromSloc) {
+                // We use a tiny timeout to ensure the UI has finished rendering 
+                // before we throw a busy indicator on it
+                setTimeout(function() {
+                    this._fetchBatchesInBackground(sPlant, sFromSloc);
+                }.bind(this), 100);
+            }
         },
 
         onSelectionChange: function () {
