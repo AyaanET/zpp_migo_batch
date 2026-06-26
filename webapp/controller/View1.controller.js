@@ -6,8 +6,10 @@ sap.ui.define([
     "sap/ui/core/Fragment",
     "zppmigobatch/model/models",   // <--- 1. ADD THIS IMPORT
     "sap/m/MessageBox",                        // <--- Add this
-    "sap/ui/core/format/DateFormat"
-], function (Controller, Filter, FilterOperator, MessageToast, Fragment, models, MessageBox, DateFormat) { // <--- 2. ADD 'models' HERE
+    "sap/ui/core/format/DateFormat",
+    "sap/ui/export/Spreadsheet",       // <--- ADD THIS
+    "sap/ui/export/library"
+], function (Controller, Filter, FilterOperator, MessageToast, Fragment, models, MessageBox, DateFormat, Spreadsheet, exportLibrary) { // <--- 2. ADD 'models' HERE
     "use strict";
 
     return Controller.extend("zppmigobatch.controller.View1", {
@@ -224,9 +226,82 @@ sap.ui.define([
         onItemVHConfirm: function (oEvent) {
             var oSelectedItem = oEvent.getParameter("selectedItem");
             if (oSelectedItem) {
-                var sSalesOrderItem = oSelectedItem.getCells()[0].getText();
-                this.getView().byId("inputSalesOrderItem").setValue(sSalesOrderItem);
+                // var sSalesOrderItem = oSelectedItem.getCells()[0].getText();
+                // this.getView().byId("inputSalesOrderItem").setValue(sSalesOrderItem);
+
+                var oData = oSelectedItem.getBindingContext().getObject();
+                
+                var oLocalModel = this.getView().getModel("local");
+
+                // Populate fields from the Item row
+                oLocalModel.setProperty("/selection/salesOrderItem", oData.SalesOrderItem);
+                oLocalModel.setProperty("/selection/material", oData.Material);
+                oLocalModel.setProperty("/selection/materialDescription", oData.ProductDescription);
             }
+        },
+
+        // ==========================================
+        // MANUAL ITEM INPUT CHANGE HANDLER
+        // ==========================================
+     // ==========================================
+        // MANUAL ITEM INPUT CHANGE HANDLER (BACKEND FETCH)
+        // ==========================================
+        onSalesOrderItemChange: function (oEvent) {
+            var oInput = oEvent.getSource();
+            var sItemValue = oInput.getValue().trim();
+            var oView = this.getView();
+            var oLocalModel = oView.getModel("local");
+            var oODataModel = oView.getModel(); // Main OData V4 Model
+            
+            var sSalesOrder = oLocalModel.getProperty("/selection/salesOrder");
+
+            // 1. Safe cleanup if the user clears the entry field manually
+            if (!sItemValue) {
+                oLocalModel.setProperty("/selection/material", "");
+                oLocalModel.setProperty("/selection/materialDescription", "");
+                return;
+            }
+
+            // 2. Format inputs to structural ABAP requirements (leading zeros)
+            var sPaddedItem = sItemValue.padStart(6, '0');
+            var sPaddedOrder = (sSalesOrder || "").trim().padStart(10, '0');
+            
+            // Push formatted item value back to sync input control string visual state
+            // oLocalModel.setProperty("/selection/salesOrderItem", sPaddedItem);
+
+            if (!sPaddedOrder || sPaddedOrder === "0000000000") {
+                sap.m.MessageBox.error("Please enter a valid Sales Order before specifying an item.");
+                return;
+            }
+
+            // 3. Construct an explicit context path pointing to the matching entity instance
+            // Syntactical layout: /ZI_SALESITEM_VH(SalesOrder='0010000071',SalesOrderItem='000010')
+            var sContextPath = "/ZI_SALESITEM_VH(SalesOrder='" + sPaddedOrder + "',SalesOrderItem='" + sPaddedItem + "')";
+            
+            oView.setBusy(true);
+
+            // Create a single context binding instead of a list binding
+            var oContextBinding = oODataModel.bindContext(sContextPath);
+
+            // Execute the network request payload download explicitly
+            oContextBinding.requestObject().then(function (oData) {
+                oView.setBusy(false);
+
+                if (oData) {
+                    // Populate data properties safely upon successful return assignment
+                    oLocalModel.setProperty("/selection/material", oData.Material);
+                    oLocalModel.setProperty("/selection/materialDescription", oData.ProductDescription);
+                }
+            }).catch(function (oError) {
+                oView.setBusy(false);
+                
+                // Clear out dependent tracking definitions when entries can't map to a DB profile
+                oLocalModel.setProperty("/selection/material", "");
+                oLocalModel.setProperty("/selection/materialDescription", "");
+                
+                console.error("Direct fetch failed: ", oError);
+                sap.m.MessageToast.show("Invalid item specified for this Sales Order.");
+            });
         },
 
         onItemVHSearch: function (oEvent) {
@@ -239,6 +314,8 @@ sap.ui.define([
             // 2. Add the search term if the user typed one
             if (sValue) {
                 aFilters.push(new Filter("SalesOrderItem", FilterOperator.Contains, sValue));
+                aFilters.push(new Filter("Material", FilterOperator.Contains, sValue));
+                aFilters.push(new Filter("ProductDescription", FilterOperator.Contains, sValue));
             }
             
             // Apply both filters to the dialog
@@ -443,60 +520,109 @@ sap.ui.define([
         // ==========================================
         // SCAN VALIDATION & APPEND LOGIC
         // ==========================================
+     // ==========================================
+        // SCAN VALIDATION & APPEND LOGIC (MULTI-BATCH)
+        // ==========================================
         onAddBatch: function (oEvent) {
             var oView = this.getView();
             var oInput = oView.byId("batchInput");
             
-            var sScannedBatch = oInput.getValue().trim(); 
+            var sInputValue = oInput.getValue().trim(); 
             var oLocalModel = oView.getModel("local");
 
-            
+            // Helper function to keep focus on the scanner input
             var retainFocus = function() {
                 setTimeout(function() {
                     oInput.focus();
                 }, 100);
             };
 
-            if (!sScannedBatch) {
+            if (!sInputValue) {
                 sap.m.MessageToast.show("Please enter or scan a batch.");
+                retainFocus();
                 return;
             }
 
             var aAllBatches = oLocalModel.getProperty("/allBatches") || [];
             var aScanned = oLocalModel.getProperty("/scannedBatches") || [];
 
-            var oFoundBatch = aAllBatches.find(function(b) {
-                return b.Batch === sScannedBatch;
+            // 1. Split the input string by any whitespace (handles spaces, tabs, and newlines!)
+            var aInputBatches = sInputValue.split(/\s+/);
+            
+            // 2. Track what happens during the loop
+            var iAddedCount = 0;
+            var aNotFound = [];
+            var aDuplicates = [];
+
+            // 3. Loop through every batch the user provided
+            aInputBatches.forEach(function(sScannedBatch) {
+                if (!sScannedBatch) { return; } // Skip empty strings caused by extra spaces
+
+                // Find the batch in the background cache
+                var oFoundBatch = aAllBatches.find(function(b) {
+                    return b.Batch === sScannedBatch;
+                });
+
+                if (!oFoundBatch) {
+                    aNotFound.push(sScannedBatch);
+                    return; // Skip to the next batch
+                }
+
+                // Check if it's already in the table
+                var bAlreadyScanned = aScanned.some(function(b) {
+                    return b.batch === sScannedBatch;
+                });
+
+                if (bAlreadyScanned) {
+                    aDuplicates.push(sScannedBatch);
+                    return; // Skip to the next batch
+                }
+
+                // If found and not a duplicate, add it to our array
+                aScanned.push({
+                    batch:       oFoundBatch.Batch,
+                    material:    oFoundBatch.Material,
+                    description: oFoundBatch.ProductDescription,
+                    qty:         oFoundBatch.QTY,
+                    uom:         oFoundBatch.MaterialBaseUnit
+                });
+                
+                iAddedCount++;
             });
 
-            if (!oFoundBatch) {
-                sap.m.MessageBox.error("Batch " + sScannedBatch + " not found or has 0 quantity in this Plant/SLoc.");
-                oInput.setValue(""); 
-                return;
+            // 4. If we successfully added at least one batch, update the UI
+            if (iAddedCount > 0) {
+                oLocalModel.setProperty("/scannedBatches", aScanned);
+                
+                // Recalculate the yield quantity
+                if (this._calculateTotalYield) {
+                    this._calculateTotalYield();
+                }
             }
 
-            var bAlreadyScanned = aScanned.some(function(b) {
-                return b.batch === sScannedBatch;
-            });
-
-            if (bAlreadyScanned) {
-                sap.m.MessageToast.show("Batch " + sScannedBatch + " is already added.");
-                oInput.setValue("");
-                return;
+            // 5. Build a dynamic feedback message for the user
+            var sMessage = "";
+            if (iAddedCount > 0) {
+                sMessage += "Added " + iAddedCount + " batches. ";
+            }
+            if (aNotFound.length > 0) {
+                sMessage += "\nBatches Not Found or have 0 Quantity: " + aNotFound.join(", ") + ".";
+            }
+            if (aDuplicates.length > 0) {
+                sMessage += "\nBatches Already Added: " + aDuplicates.join(", ") + ".";
             }
 
-            aScanned.push({
-                batch:       oFoundBatch.Batch,
-                material:    oFoundBatch.Material,
-                description: oFoundBatch.ProductDescription,
-                qty:         oFoundBatch.QTY,
-                uom:         oFoundBatch.MaterialBaseUnit
-            });
+            // 6. Show the result
+            if (aNotFound.length > 0 || aDuplicates.length > 0) {
+                // If there were any errors, use a Warning popup so they don't miss it
+                sap.m.MessageBox.warning(sMessage.trim());
+            } else {
+                // If everything was perfect, just show a quick toast
+                sap.m.MessageToast.show(sMessage.trim());
+            }
 
-            oLocalModel.setProperty("/scannedBatches", aScanned);
+            // 7. Clear the input and lock the cursor back in place
             oInput.setValue("");
-
-            this._calculateTotalYield();
             retainFocus();
         },
 
@@ -689,6 +815,74 @@ sap.ui.define([
                 }
                 MessageBox.error(sErrorMsg);
             });
-        }
+        },
+
+        // ==========================================
+        // EXPORT TO EXCEL LOGIC
+        // ==========================================
+        onExportExcel: function () {
+            var oView = this.getView();
+            var oLocalModel = oView.getModel("local");
+            var aScannedBatches = oLocalModel.getProperty("/scannedBatches");
+
+            // 1. Check if there is actually data to export
+            if (!aScannedBatches || aScannedBatches.length === 0) {
+                sap.m.MessageToast.show("There are no scanned batches to export.");
+                return;
+            }
+
+            // 2. Fetch the column configuration
+            var aCols = this._createColumnConfig();
+
+            // 3. Configure the Excel document settings
+            var oSettings = {
+                workbook: {
+                    columns: aCols,
+                    hierarchyLevel: 'Level'
+                },
+                dataSource: aScannedBatches,      // Feed it our local JSON array
+                fileName: 'Scanned_Batches.xlsx', // Name of the downloaded file
+                worker: false                     // Set to false for local JSON data
+            };
+
+            // 4. Build and download the spreadsheet
+            var oSheet = new Spreadsheet(oSettings);
+            oSheet.build().finally(function() {
+                oSheet.destroy();
+            });
+        },
+
+        // Helper function to define Excel columns
+        _createColumnConfig: function () {
+            var EdmType = exportLibrary.EdmType;
+
+            return [
+                {
+                    label: 'Batch Number',
+                    property: 'batch',
+                    type: EdmType.String
+                },
+                {
+                    label: 'Material',
+                    property: 'material',
+                    type: EdmType.String
+                },
+                {
+                    label: 'Description',
+                    property: 'description',
+                    type: EdmType.String
+                },
+                {
+                    label: 'Quantity',
+                    property: 'qty',
+                    type: EdmType.Number
+                },
+                {
+                    label: 'Unit of Measure',
+                    property: 'uom',
+                    type: EdmType.String
+                }
+            ];
+        },
     });
 });

@@ -13,6 +13,7 @@
             <cells>
                 <Text id="_IDGenText" text="{SalesOrder}" />
                 <Text id="_IDGenText1" text="{Plant}" />
+                <Text id="_IDGenText22"  text="{BusinessPartnerFullName}" />
             </cells>
         </ColumnListItem>
         
@@ -22,6 +23,9 @@
             </Column>
             <Column id="_IDGenColumn2">
                 <header><Text id="_IDGenText3" text="Plant" /></header>
+            </Column>
+            <Column id="_IDGenColumn12" >
+                <header><Text id="_IDGenText23"  text="Business Partner" /></header>
             </Column>
         </columns>
         

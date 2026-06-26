@@ -3,7 +3,7 @@
         title="Select Item"
         items="{/ZI_SALESITEM_VH}"
         confirm=".onItemVHConfirm"
-        contentWidth="600px"         
+        contentWidth="800px"         
         contentHeight="400px"
         search=".onItemVHSearch"
         rememberSelections="true"
@@ -13,6 +13,8 @@
             <cells>
                 <Text id="_IDGenText4" text="{SalesOrderItem}" />
                 <Text id="_IDGenText5" text="{SalesOrder}" />
+                <Text id="_IDGenText19"  text="{Material}" />
+                <Text id="_IDGenText20" text="{ProductDescription}" />
             </cells>
         </ColumnListItem>
         
@@ -22,6 +24,12 @@
             </Column>
             <Column id="_IDGenColumn4">
                 <header><Text id="_IDGenText7" text="Sales Order" /></header>
+            </Column>
+            <Column id="_IDGenColumn10" >
+                <header><Text id="_IDGenText18"  text="Material" /></header>
+            </Column>
+            <Column id="_IDGenColumn11" >
+                <header><Text id="_IDGenText21" text="Product Description" /></header>
             </Column>
         </columns>
         

@@ -56,6 +56,7 @@
                             <Input id="inputSalesOrderItem"
                                    value="{local>/selection/salesOrderItem}" showValueHelp="true"
                                    showSuggestion="true"
+                                   change=".onSalesOrderItemChange"
                                    suggest=".onSalesOrderItemSuggest"
                                    suggestionItems="{ path: '/ZI_SALESITEM_VH', templateShareable: false }"
                                    valueHelpRequest=".onSalesOrderItemValueHelp"
@@ -65,6 +66,16 @@
                                 </suggestionItems>
                             </Input>
 
+
+                            <Label id="_IDGenLabelMat" text="Material" />
+                            <Input id="inputMaterial" 
+                                   value="{local>/selection/material}" 
+                                   editable="false" />
+
+                            <Label id="_IDGenLabelMatDesc" text="Material Description" />
+                            <Input id="inputMaterialDesc" 
+                                   value="{local>/selection/materialDescription}" 
+                                   editable="false" />
 
                             <!-- <core:Title id="_IDGenTitle2" text="Storage Details"  /> -->
 
@@ -159,6 +170,11 @@
                         <OverflowToolbar id="_IDGenOverflowToolbar">
                             <Title id="_IDGenTitle" text="Scanned Items" level="H3" />
                             <ToolbarSpacer id="_IDGenToolbarSpacer" />
+                            <Button id="btnExport"
+                                text="Export"
+                                icon="sap-icon://excel-attachment"
+                                type="Success"
+                                press=".onExportExcel" />
                             <Button id="_IDGenButton1"
                                 text="Delete"
                                 icon="sap-icon://delete"

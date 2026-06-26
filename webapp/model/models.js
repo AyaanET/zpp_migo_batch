@@ -32,7 +32,9 @@ function (JSONModel, Device) {
                     fromSloc: "1201",        // Default value
                     toSloc: "1210",          // Default value
                     remark: "",
-                    yieldQty: ""
+                    yieldQty: "",
+                    material: "",             // <-- ADD THIS
+                    materialDescription: "",
                 },
 
                 // 2. Background Data (Loaded from ZI_GET_BATCHES)
