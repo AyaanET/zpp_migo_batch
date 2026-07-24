@@ -26,7 +26,7 @@ sap.ui.define([
             if (sPlant && sFromSloc) {
                 // We use a tiny timeout to ensure the UI has finished rendering 
                 // before we throw a busy indicator on it
-                setTimeout(function() {
+                setTimeout(function () {
                     this._fetchBatchesInBackground(sPlant, sFromSloc);
                 }.bind(this), 100);
             }
@@ -37,24 +37,24 @@ sap.ui.define([
             var sPlant = oView.byId("inputPlant").getValue().trim();
             var sFromSloc = oView.byId("inputFromSloc").getValue().trim();
 
-            
+
             if (!sPlant || !sFromSloc) {
-                
+
                 sap.m.MessageToast.show("Please enter both Plant and From Storage Location to load batches.");
-                
-                
+
+
                 var oLocalModel = oView.getModel("local");
                 if (oLocalModel) {
                     oLocalModel.setProperty("/allBatches", []);
                 }
-                return; 
+                return;
             }
 
-           
+
             this._fetchBatchesInBackground(sPlant, sFromSloc);
         },
 
-        
+
         onSalesOrderSuggest: function (oEvent) {
             var sTerm = oEvent.getParameter("suggestValue");
             var sPlant = this.getView().byId("inputPlant").getValue();
@@ -99,7 +99,7 @@ sap.ui.define([
             if (!this._oPlantDialog) {
                 Fragment.load({
                     id: oView.getId(),
-                    name: "zppmigobatch.view.PlantVH", 
+                    name: "zppmigobatch.view.PlantVH",
                     controller: this
                 }).then(function (oDialog) {
                     this._oPlantDialog = oDialog;
@@ -137,7 +137,7 @@ sap.ui.define([
                     and: false
                 }));
             }
-            
+
             // Apply the filter to the dialog's binding
             oEvent.getSource().getBinding("items").filter(aFilters);
         },
@@ -173,7 +173,7 @@ sap.ui.define([
         onSalesOrderVHSearch: function (oEvent) {
             var sValue = oEvent.getParameter("value");
             var sPlant = this.getView().byId("inputPlant").getValue();
-            
+
             // 1. ALWAYS keep the Plant filter active
             var aFilters = [new Filter("Plant", FilterOperator.EQ, sPlant)];
 
@@ -181,7 +181,7 @@ sap.ui.define([
             if (sValue) {
                 aFilters.push(new Filter("SalesOrder", FilterOperator.Contains, sValue));
             }
-            
+
             // Apply both filters to the dialog
             oEvent.getSource().getBinding("items").filter(aFilters);
         },
@@ -230,7 +230,7 @@ sap.ui.define([
                 // this.getView().byId("inputSalesOrderItem").setValue(sSalesOrderItem);
 
                 var oData = oSelectedItem.getBindingContext().getObject();
-                
+
                 var oLocalModel = this.getView().getModel("local");
 
                 // Populate fields from the Item row
@@ -243,7 +243,7 @@ sap.ui.define([
         // ==========================================
         // MANUAL ITEM INPUT CHANGE HANDLER
         // ==========================================
-     // ==========================================
+        // ==========================================
         // MANUAL ITEM INPUT CHANGE HANDLER (BACKEND FETCH)
         // ==========================================
         onSalesOrderItemChange: function (oEvent) {
@@ -252,7 +252,7 @@ sap.ui.define([
             var oView = this.getView();
             var oLocalModel = oView.getModel("local");
             var oODataModel = oView.getModel(); // Main OData V4 Model
-            
+
             var sSalesOrder = oLocalModel.getProperty("/selection/salesOrder");
 
             // 1. Safe cleanup if the user clears the entry field manually
@@ -265,7 +265,7 @@ sap.ui.define([
             // 2. Format inputs to structural ABAP requirements (leading zeros)
             var sPaddedItem = sItemValue.padStart(6, '0');
             var sPaddedOrder = (sSalesOrder || "").trim().padStart(10, '0');
-            
+
             // Push formatted item value back to sync input control string visual state
             // oLocalModel.setProperty("/selection/salesOrderItem", sPaddedItem);
 
@@ -277,7 +277,7 @@ sap.ui.define([
             // 3. Construct an explicit context path pointing to the matching entity instance
             // Syntactical layout: /ZI_SALESITEM_VH(SalesOrder='0010000071',SalesOrderItem='000010')
             var sContextPath = "/ZI_SALESITEM_VH(SalesOrder='" + sPaddedOrder + "',SalesOrderItem='" + sPaddedItem + "')";
-            
+
             oView.setBusy(true);
 
             // Create a single context binding instead of a list binding
@@ -294,11 +294,11 @@ sap.ui.define([
                 }
             }).catch(function (oError) {
                 oView.setBusy(false);
-                
+
                 // Clear out dependent tracking definitions when entries can't map to a DB profile
                 oLocalModel.setProperty("/selection/material", "");
                 oLocalModel.setProperty("/selection/materialDescription", "");
-                
+
                 console.error("Direct fetch failed: ", oError);
                 sap.m.MessageToast.show("Invalid item specified for this Sales Order.");
             });
@@ -307,7 +307,7 @@ sap.ui.define([
         onItemVHSearch: function (oEvent) {
             var sValue = oEvent.getParameter("value");
             var sSalesOrder = this.getView().byId("inputSalesOrder").getValue();
-            
+
             // 1. ALWAYS keep the Sales Order filter active
             var aFilters = [new Filter("SalesOrder", FilterOperator.EQ, sSalesOrder)];
 
@@ -317,12 +317,12 @@ sap.ui.define([
                 aFilters.push(new Filter("Material", FilterOperator.Contains, sValue));
                 aFilters.push(new Filter("ProductDescription", FilterOperator.Contains, sValue));
             }
-            
+
             // Apply both filters to the dialog
             oEvent.getSource().getBinding("items").filter(aFilters);
         },
 
-                // ==========================================
+        // ==========================================
         // FROM STORAGE LOCATION LOGIC
         // ==========================================
         onFromSlocSuggest: function (oEvent) {
@@ -393,9 +393,9 @@ sap.ui.define([
             if (oSelectedItem) {
                 var sSloc = oSelectedItem.getCells()[1].getText();
                 this.getView().byId("inputFromSloc").setValue(sSloc);
-                
+
                 // Trigger the background fetch since From Sloc changed
-                this.onSelectionChange(); 
+                this.onSelectionChange();
             }
         },
 
@@ -476,18 +476,12 @@ sap.ui.define([
         // ==========================================
         // BACKGROUND CACHE LOGIC
         // ==========================================
-        _fetchBatchesInBackground: function (sPlant, sFromSloc) {
+        _fetchBatchesInBackground: async function (sPlant, sFromSloc) {
             var oView = this.getView();
-            // var sPlant = oView.byId("inputPlant").getValue().trim();
-            // var sFromSloc = oView.byId("inputFromSloc").getValue().trim();
+            var oModel = oView.getModel();
 
-            console.log("Attempting fetch... Plant:", sPlant, " | SLoc:", sFromSloc);
+            console.log("Attempting fetch...", sPlant, sFromSloc);
 
-            if (!sPlant || !sFromSloc) {
-                return; 
-            }
-
-            var oModel = oView.getModel(); // Your OData V4 Model
             var aFilters = [
                 new Filter("Plant", FilterOperator.EQ, sPlant),
                 new Filter("StorageLocation", FilterOperator.EQ, sFromSloc)
@@ -498,41 +492,56 @@ sap.ui.define([
             };
 
             var oListBinding = oModel.bindList("/ZI_GET_BATCHES", null, null, aFilters, mParameters);
-            
-            console.log("Sending network request to SAP...");
 
-            oListBinding.requestContexts(0, 5000).then(function (aContexts) {
-                var aAllBatches = aContexts.map(function (oContext) {
-                    return oContext.getObject();
-                });
-                
-                console.log("Data successfully downloaded:", aAllBatches);
+            var aAllBatches = [];
+            var iStart = 0;
+            var iPageSize = 500;
+            var bContinue = true;
+
+            try {
+                while (bContinue) {
+                    let aContexts = await oListBinding.requestContexts(iStart, iPageSize);
+                    let aPageData = aContexts.map(function (oContext) {
+                        return oContext.getObject();
+                    });
+
+                    aAllBatches = aAllBatches.concat(aPageData);
+
+                    console.log("Fetched page:", iStart, aPageData.length);
+
+                    if (aPageData.length < iPageSize) {
+                        bContinue = false;
+                    } else {
+                        iStart += iPageSize;
+                    }
+                }
+
+                console.log("Fetched batches:", aAllBatches);
                 oView.getModel("local").setProperty("/allBatches", aAllBatches);
-
-                sap.m.MessageToast.show("Scanner Ready: Loaded " + aAllBatches.length + " batches.");
-                
-            }).catch(function(oError) {
+                sap.m.MessageToast.show("Scanner Ready: Loaded " + aAllBatches.length + " batches for this order.");
+            } catch (oError) {
                 console.error("Fetch failed:", oError);
                 sap.m.MessageToast.show("Failed to load background batches.");
-            });
+            }
         },
+
 
         // ==========================================
         // SCAN VALIDATION & APPEND LOGIC
         // ==========================================
-     // ==========================================
+        // ==========================================
         // SCAN VALIDATION & APPEND LOGIC (MULTI-BATCH)
         // ==========================================
         onAddBatch: function (oEvent) {
             var oView = this.getView();
             var oInput = oView.byId("batchInput");
-            
-            var sInputValue = oInput.getValue().trim(); 
+
+            var sInputValue = oInput.getValue().trim();
             var oLocalModel = oView.getModel("local");
 
             // Helper function to keep focus on the scanner input
-            var retainFocus = function() {
-                setTimeout(function() {
+            var retainFocus = function () {
+                setTimeout(function () {
                     oInput.focus();
                 }, 100);
             };
@@ -548,18 +557,18 @@ sap.ui.define([
 
             // 1. Split the input string by any whitespace (handles spaces, tabs, and newlines!)
             var aInputBatches = sInputValue.split(/\s+/);
-            
+
             // 2. Track what happens during the loop
             var iAddedCount = 0;
             var aNotFound = [];
             var aDuplicates = [];
 
             // 3. Loop through every batch the user provided
-            aInputBatches.forEach(function(sScannedBatch) {
+            aInputBatches.forEach(function (sScannedBatch) {
                 if (!sScannedBatch) { return; } // Skip empty strings caused by extra spaces
 
                 // Find the batch in the background cache
-                var oFoundBatch = aAllBatches.find(function(b) {
+                var oFoundBatch = aAllBatches.find(function (b) {
                     return b.Batch === sScannedBatch;
                 });
 
@@ -569,7 +578,7 @@ sap.ui.define([
                 }
 
                 // Check if it's already in the table
-                var bAlreadyScanned = aScanned.some(function(b) {
+                var bAlreadyScanned = aScanned.some(function (b) {
                     return b.batch === sScannedBatch;
                 });
 
@@ -580,20 +589,20 @@ sap.ui.define([
 
                 // If found and not a duplicate, add it to our array
                 aScanned.push({
-                    batch:       oFoundBatch.Batch,
-                    material:    oFoundBatch.Material,
+                    batch: oFoundBatch.Batch,
+                    material: oFoundBatch.Material,
                     description: oFoundBatch.ProductDescription,
-                    qty:         oFoundBatch.QTY,
-                    uom:         oFoundBatch.MaterialBaseUnit
+                    qty: oFoundBatch.QTY,
+                    uom: oFoundBatch.MaterialBaseUnit
                 });
-                
+
                 iAddedCount++;
             });
 
             // 4. If we successfully added at least one batch, update the UI
             if (iAddedCount > 0) {
                 oLocalModel.setProperty("/scannedBatches", aScanned);
-                
+
                 // Recalculate the yield quantity
                 if (this._calculateTotalYield) {
                     this._calculateTotalYield();
@@ -634,19 +643,19 @@ sap.ui.define([
             var oTable = oView.byId("batchesTable");
             var oLocalModel = oView.getModel("local");
 
-            
+
             var aSelectedContexts = oTable.getSelectedContexts();
 
-            
+
             if (aSelectedContexts.length === 0) {
                 sap.m.MessageToast.show("Please select at least one batch to delete.");
                 return;
             }
 
-           
+
             var aScannedBatches = oLocalModel.getProperty("/scannedBatches") || [];
 
-            
+
             var aSelectedObjects = aSelectedContexts.map(function (oContext) {
                 return oContext.getObject();
             });
@@ -674,7 +683,7 @@ sap.ui.define([
             // Loop through all scanned batches and sum the quantity
             aScannedBatches.forEach(function (oBatch) {
                 // Parse float to ensure mathematical addition, not string concatenation
-                fTotalQty += parseFloat(oBatch.qty) || 0; 
+                fTotalQty += parseFloat(oBatch.qty) || 0;
             });
 
             // Set the total back to the model, rounded to 2 decimal places (optional)
@@ -684,14 +693,14 @@ sap.ui.define([
         // ==========================================
         // FOOTER BUTTON ACTIONS
         // ==========================================
-        
+
         onNew: function () {
             // Logic to clear the screen for a new entry
             var oLocalModel = this.getView().getModel("local");
-            
+
             // Clear the scanned batches array
             oLocalModel.setProperty("/scannedBatches", []);
-            
+
             // Reset the selection inputs if needed
             oLocalModel.setProperty("/selection/plant", "1200");
             oLocalModel.setProperty("/selection/salesOrder", "");
@@ -722,9 +731,9 @@ sap.ui.define([
             // ==========================================
             // 2. VALIDATION
             // ==========================================
-            if (!oSelection.plant || !oSelection.salesOrder || !oSelection.salesOrderItem || 
+            if (!oSelection.plant || !oSelection.salesOrder || !oSelection.salesOrderItem ||
                 !oSelection.fromSloc || !oSelection.toSloc || !oSelection.postingDate) {
-                
+
                 MessageBox.error("Please fill in all mandatory Order Details and Storage Details before submitting.");
                 return;
             }
@@ -742,17 +751,17 @@ sap.ui.define([
             var sSalesOrder = oSelection.salesOrder.padStart(10, '0');
             var sSalesOrderItem = oSelection.salesOrderItem.padStart(6, '0');
 
-            var aItemsPayload = aScannedBatches.map(function(oBatch) {
+            var aItemsPayload = aScannedBatches.map(function (oBatch) {
                 return {
                     "Material": oBatch.material,
-                    "Qty": String(oBatch.qty), 
+                    "Qty": String(oBatch.qty),
                     "Unit": oBatch.uom,
                     "Batch": oBatch.batch
                 };
             });
 
             var oPayload = {
-                "Salesorder": sSalesOrder,          
+                "Salesorder": sSalesOrder,
                 "Salesorderitem": sSalesOrderItem,
                 "Plant": oSelection.plant,
                 "PostingDate": sFormattedDate,
@@ -772,17 +781,17 @@ sap.ui.define([
 
             oContext.created().then(function () {
                 oView.setBusy(false);
-                
+
                 // Fetch the returned fields from SAP
                 var sMatDoc = oContext.getProperty("MatDoc");
                 var sMess = oContext.getProperty("Mess"); // Fetch backend message if available
-                
+
                 // THE FIX: Check if we actually got a Material Document
                 if (sMatDoc && sMatDoc.trim() !== "") {
                     // SUCCESS PATH
                     var sMessage = "Material Document " + sMatDoc + " created successfully!";
                     MessageBox.success(sMessage, {
-                        onClose: function() {
+                        onClose: function () {
                             // Automatically clear the screen after success
                             oLocalModel.setProperty("/scannedBatches", []);
                             oLocalModel.setProperty("/selection/plant", "1200");
@@ -791,11 +800,11 @@ sap.ui.define([
                             oLocalModel.setProperty("/selection/fromSloc", "1201");
                             oLocalModel.setProperty("/selection/toSloc", "1210");
                             oLocalModel.setProperty("/selection/remark", "");
-                            
+
                             // Put cursor back at the plant
                             var oPlantInput = oView.byId("inputPlant");
                             if (oPlantInput) {
-                                oPlantInput.focus(); 
+                                oPlantInput.focus();
                             }
                         }
                     });
@@ -807,7 +816,7 @@ sap.ui.define([
 
             }).catch(function (oError) {
                 oView.setBusy(false);
-                
+
                 // Network or Framework Error
                 var sErrorMsg = "Failed to post Material Document due to a network/server error.";
                 if (oError && oError.message) {
@@ -847,7 +856,7 @@ sap.ui.define([
 
             // 4. Build and download the spreadsheet
             var oSheet = new Spreadsheet(oSettings);
-            oSheet.build().finally(function() {
+            oSheet.build().finally(function () {
                 oSheet.destroy();
             });
         },
