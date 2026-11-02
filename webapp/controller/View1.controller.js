@@ -535,6 +535,10 @@ sap.ui.define([
                         aRows.forEach(function (oRow) {
                             aScanned.push({
                                 batch: oRow.Batch,
+                                salesOrder: oSelection.salesOrder,
+                                salesOrderItem: oSelection.salesOrderItem,
+                                fromSloc: oSelection.fromSloc,
+                                toSloc: oSelection.toSloc,
                                 material: oRow.Material,
                                 description: oRow.ProductDescription,
                                 qty: oRow.QTY,
@@ -804,6 +808,26 @@ sap.ui.define([
                 {
                     label: 'Batch Number',
                     property: 'batch',
+                    type: EdmType.String
+                },
+                {
+                    label: 'Sales Order',
+                    property: 'salesOrder',
+                    type: EdmType.String
+                },
+                {
+                    label: 'Sales Order Item',
+                    property: 'salesOrderItem',
+                    type: EdmType.String
+                },
+                {
+                    label: 'From Storage Location',
+                    property: 'fromSloc',
+                    type: EdmType.String
+                },
+                {
+                    label: 'To Storage Location',
+                    property: 'toSloc',
                     type: EdmType.String
                 },
                 {

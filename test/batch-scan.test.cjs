@@ -7,7 +7,7 @@ function setup(response) {
     let controller;
     const requests = [], errors = [];
     const state = {
-        '/selection': { salesOrder: '1', salesOrderItem: '10', material: "MID'NIGHT", plant: '3104', fromSloc: 'BDJ1' },
+        '/selection': { salesOrder: '1', salesOrderItem: '10', material: "MID'NIGHT", plant: '3104', fromSloc: 'BDJ1', toSloc: 'BDJ2' },
         '/scannedBatches': []
     };
     const model = { getProperty: p => state[p], setProperty: (p, v) => { state[p] = v; } };
@@ -37,6 +37,10 @@ test('successful scan requests exact filters and adds returned data; duplicate d
     await h.controller.onAddBatch();
     assert.equal(h.state['/scannedBatches'].length, 1);
     assert.equal(h.state['/selection/yieldQty'], '5.000');
+    assert.equal(h.state['/scannedBatches'][0].salesOrder, '1');
+    assert.equal(h.state['/scannedBatches'][0].salesOrderItem, '10');
+    assert.equal(h.state['/scannedBatches'][0].fromSloc, 'BDJ1');
+    assert.equal(h.state['/scannedBatches'][0].toSloc, 'BDJ2');
     const url = new URL(h.requests[0].url, 'https://example.com');
     assert.equal(url.pathname, '/service/so_batchs');
     assert.equal(url.searchParams.get('sap-client'), '100');
