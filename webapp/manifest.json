@@ -44,11 +44,11 @@
     "technology": "UI5",
     "icons": {
       "icon": "sap-icon://shipping-status",
-      "favIcon": "",
-      "phone": "",
-      "phone@2": "",
-      "tablet": "",
-      "tablet@2": ""
+      "favIcon": "sap-icon://shipping-status",
+      "phone": "sap-icon://shipping-status",
+      "phone@2": "sap-icon://shipping-status",
+      "tablet": "sap-icon://shipping-status",
+      "tablet@2": "sap-icon://shipping-status"
     },
     "deviceTypes": {
       "desktop": true,

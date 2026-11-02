@@ -5,6 +5,11 @@
     xmlns="sap.m">
     
     <Page id="page" title="{i18n>title}">
+        <subHeader>
+            <Toolbar id="transferPostingSubtitleBar">
+                <Title id="transferPostingSubtitle" text="{i18n>subtitle}" level="H2" />
+            </Toolbar>
+        </subHeader>
         <content>
             
             <Panel id="selectionPanel" expandable="true" expanded="true" headerText="Selection Screen" width="auto" class="sapUiResponsiveMargin">
