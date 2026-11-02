@@ -18,7 +18,7 @@ function (JSONModel, Device) {
 
         /**
          * Main JSON model for the MIGO Batching selection and scanning screen.
-         * Contains form inputs, background cache, and the active table array.
+         * Contains form inputs and the active table array.
          */
         createLocalModel: function () {
             var oModel = new JSONModel({
@@ -36,9 +36,6 @@ function (JSONModel, Device) {
                     material: "",             // <-- ADD THIS
                     materialDescription: "",
                 },
-
-                // 2. Background Data (Loaded from ZI_GET_BATCHES)
-                allBatches: [],
 
                 // 3. Active Table Data (Scanned items shown on UI)
                 scannedBatches: []

@@ -43,6 +43,8 @@
                             <Input id="inputSalesOrder"
                                    value="{local>/selection/salesOrder}" showValueHelp="true"
                                    showSuggestion="true"
+                                   change=".onSalesOrderChange"
+                                   suggestionItemSelected=".onSalesOrderChange"
                                    suggest=".onSalesOrderSuggest"
                                    suggestionItems="{ path: '/ZI_PLANTSALES_VH', templateShareable: false }"
                                    valueHelpRequest=".onSalesOrderValueHelp"
